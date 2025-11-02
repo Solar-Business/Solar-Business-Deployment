@@ -1,2 +1,4 @@
 DB/
-solar-backend/
+BACK/.env.example
+BACK/node_modules/
+

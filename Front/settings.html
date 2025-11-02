@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Configuración - SolarEnergy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+    <!-- Sidebar and Content Container -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 transition duration-200 ease-in-out z-50">
+            <div class="flex items-center space-x-2 px-4">
+                <i data-feather="sun" class="text-yellow-500 w-8 h-8"></i>
+                <span class="text-xl font-bold">SolarEnergy</span>
+            </div>
+            <nav>
+                <div class="px-4 py-3 text-blue-200 text-sm font-medium">MENÚ PRINCIPAL</div>
+                <a href="user-dashboard.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="home" class="mr-2 w-5 h-5"></i> Inicio
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="activity" class="mr-2 w-5 h-5"></i> Monitoreo
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="bar-chart-2" class="mr-2 w-5 h-5"></i> Estadísticas
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="credit-card" class="mr-2 w-5 h-5"></i> Pagos
+                </a>
+                <a href="settings.html" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center">
+                    <i data-feather="settings" class="mr-2 w-5 h-5"></i> Configuración
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="help-circle" class="mr-2 w-5 h-5"></i> Soporte
+                </a>
+                
+                <div class="px-4 py-3 text-blue-200 text-sm font-medium mt-8">TU SISTEMA</div>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="battery" class="mr-2 w-5 h-5"></i> Baterías
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="calendar" class="mr-2 w-5 h-5"></i> Mantenimiento
+                </a>
+                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                    <i data-feather="file-text" class="mr-2 w-5 h-5"></i> Documentos
+                </a>
+            </nav>
+        </div>
+        <!-- Mobile sidebar backdrop -->
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 md:hidden" style="display: none;" id="sidebarBackdrop"></div>
+    </div>
+
+  <!-- Mobile top nav -->
+  <header class="md:hidden w-full bg-white border-b p-3 flex justify-between items-center">
+    <div class="text-lg font-bold text-blue-900">SolarEnergy</div>
+    <div class="flex items-center gap-2">
+      <a id="m_linkDashboard" href="user-dashboard.html" class="text-sm px-2 py-1 rounded hover:bg-gray-100">Dashboard</a>
+      <a id="m_linkAdmin" href="admin-dashboard.html" class="text-sm px-2 py-1 rounded hidden">Admin</a>
+      <button id="m_btnLogout" class="text-sm px-2 py-1 rounded">Cerrar</button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="flex-1 p-6">
+    <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-4">Mi perfil / Configuración</h2>
+
+      <form id="settingsForm" class="grid grid-cols-1 gap-3">
+        <label class="text-sm text-gray-600">Nombre</label>
+        <input id="s_name" class="p-2 border rounded" placeholder="Nombre" required />
+
+        <label class="text-sm text-gray-600">Correo</label>
+        <input id="s_email" class="p-2 border rounded" type="email" placeholder="Correo" required />
+
+        <label class="text-sm text-gray-600">Nueva contraseña (opcional)</label>
+        <input id="s_password" class="p-2 border rounded" type="password" placeholder="Dejar vacío para no cambiar" />
+
+        <div class="flex gap-2 mt-2">
+          <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded">Guardar</button>
+          <button id="btnCancel" type="button" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+<script>
+const API = 'http://localhost:3000/api';
+const token = localStorage.getItem('token');
+if (!token) { alert('No autenticado.'); window.location.href='login.html'; }
+
+function parseJwt(token) {
+  try {
+    const b = token.split('.')[1];
+    return JSON.parse(decodeURIComponent(atob(b).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+  } catch(e){ return {}; }
+}
+
+async function api(path, opts = {}) {
+  opts.headers = { ...(opts.headers||{}), 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+  const res = await fetch(API + path, opts);
+  const txt = await res.text();
+  try { return { ok: res.ok, status: res.status, data: JSON.parse(txt) }; } catch(e) { return { ok: res.ok, status: res.status, data: txt }; }
+}
+
+let myId, myRole;
+async function loadProfile() {
+  const payload = parseJwt(token);
+  myId = payload.id;
+  myRole = payload.role;
+  if (!myId) { alert('Token inválido'); localStorage.removeItem('token'); window.location.href='login.html'; return; }
+
+  // Mostrar enlace admin si corresponde
+  if (myRole === 'SUPPORT') {
+    document.getElementById('linkAdmin').classList.remove('hidden');
+    document.getElementById('m_linkAdmin').classList.remove('hidden');
+  }
+
+  const r = await api('/users/' + myId);
+  if (!r.ok) { alert(r.data.message || 'Error cargando perfil'); return; }
+  const u = r.data;
+  document.getElementById('s_name').value = u.name;
+  document.getElementById('s_email').value = u.email;
+
+  // Ajustar dashboard link según rol
+  const dash = myRole === 'SUPPORT' ? 'admin-dashboard.html' : 'user-dashboard.html';
+  document.getElementById('linkDashboard').href = dash;
+  document.getElementById('m_linkDashboard').href = dash;
+}
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = { name: document.getElementById('s_name').value.trim(), email: document.getElementById('s_email').value.trim() };
+  const pass = document.getElementById('s_password').value.trim();
+  if (pass) payload.password = pass;
+  const r = await api('/users/' + myId, { method: 'PUT', body: JSON.stringify(payload) });
+  if (!r.ok) { alert(r.data.message || 'Error al actualizar'); return; }
+  alert('Perfil actualizado');
+  // redirigir a dashboard correspondiente
+  window.location.href = myRole === 'SUPPORT' ? 'admin-dashboard.html' : 'user-dashboard.html';
+});
+
+document.getElementById('btnCancel').addEventListener('click', () => {
+  window.location.href = myRole === 'SUPPORT' ? 'admin-dashboard.html' : 'user-dashboard.html';
+});
+
+function logoutAll() {
+  localStorage.removeItem('token');
+  window.location.href = 'login.html';
+}
+document.getElementById('btnLogout').addEventListener('click', logoutAll);
+document.getElementById('m_btnLogout').addEventListener('click', logoutAll);
+
+loadProfile();
+</script>
+</body>
+</html>

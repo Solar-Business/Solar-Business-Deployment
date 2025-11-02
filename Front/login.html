@@ -86,32 +86,36 @@
 
     <!-- Scripts -->
     <script>
-        // Initialize AOS animations
-        AOS.init({
-            duration: 800,
-            once: true
-        });
-
-        // Initialize feather icons
+        AOS.init({ duration: 800, once: true });
         feather.replace();
 
-        // Login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Simulate login - in a real app, this would be an API call
-            if (email.includes('admin')) {
-                // Redirect admin to admin dashboard
-                window.location.href = 'admin-dashboard.html';
-            } else if (email && password) {
-                // Redirect regular user to user dashboard
-                window.location.href = 'user-dashboard.html';
-            } else {
-                alert('Por favor ingresa un correo y contraseña válidos');
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!email || !password) { alert('Ingresa correo y contraseña'); return; }
+
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(()=>({ message: 'Error' }));
+                    alert(err.message || 'Credenciales inválidas');
+                    return;
+                }
+
+                const data = await res.json();
+                if (data.token) localStorage.setItem('token', data.token);
+                const role = data.user?.role || (email.includes('admin') ? 'SUPPORT' : 'CLIENT');
+                if (role === 'SUPPORT') window.location.href = 'admin-dashboard.html';
+                else window.location.href = 'user-dashboard.html';
+            } catch (err) {
+                console.error(err);
+                alert('No se pudo conectar con el servidor en http://localhost:3000');
             }
         });
     </script>
