@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment"></script>
@@ -40,7 +39,7 @@
             </div>
             <nav>
                 <div class="px-4 py-3 text-blue-200 text-sm font-medium">MENÚ PRINCIPAL</div>
-                <a href="#" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center">
+                <a id="linkDashboard" href="user-dashboard.html" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center">
                     <i data-feather="home" class="mr-2 w-5 h-5"></i> Inicio
                 </a>
                 <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
@@ -52,13 +51,13 @@
                 <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
                     <i data-feather="credit-card" class="mr-2 w-5 h-5"></i> Pagos
                 </a>
+                <!-- Support item - will be populated by JS -->
+                <div id="supportItem" class="px-2 mt-2"></div>
+
                 <a href="settings.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
                     <i data-feather="settings" class="mr-2 w-5 h-5"></i> Configuración
                 </a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
-                    <i data-feather="help-circle" class="mr-2 w-5 h-5"></i> Soporte
-                </a>
-                
+
                 <div class="px-4 py-3 text-blue-200 text-sm font-medium mt-8">TU SISTEMA</div>
                 <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
                     <i data-feather="battery" class="mr-2 w-5 h-5"></i> Baterías
@@ -69,7 +68,12 @@
                 <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
                     <i data-feather="file-text" class="mr-2 w-5 h-5"></i> Documentos
                 </a>
-            </nav>
+                </nav>
+                <div class="px-4 mt-10">
+                    <button id="btnLogout" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded transition">
+                        <i data-feather="log-out" class="inline w-4 h-4 mr-2"></i> Cerrar sesión
+                    </button>
+                </div>
         </div>
 
         <!-- Mobile sidebar backdrop -->
@@ -77,35 +81,45 @@
 
         <!-- Content -->
         <div class="flex-1 md:ml-64">
-            <!-- Top Navigation -->
-            <nav class="bg-white shadow-sm">
-                <div class="flex justify-between items-center px-6 py-3">
-                    <div class="flex items-center">
-                        <button id="mobileMenuButton" class="md:hidden focus:outline-none mr-4">
-                            <i data-feather="menu" class="w-6 h-6 text-blue-900"></i>
-                        </button>
-                        <h2 class="text-xl font-semibold text-blue-900">Panel de Monitoreo</h2>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <button class="p-2 rounded-full hover:bg-gray-100 transition">
-                            <i data-feather="bell" class="w-5 h-5 text-blue-900"></i>
-                        </button>
-                        <div class="relative">
-                            <button id="userMenuButton" class="flex items-center space-x-2 focus:outline-none">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                    <i data-feather="user" class="w-4 h-4 text-blue-900"></i>
+                    <!-- Mobile top nav (matches settings.html) -->
+                    <header class="md:hidden w-full bg-white border-b p-3 flex justify-between items-center">
+                        <div class="text-lg font-bold text-blue-900">SolarEnergy</div>
+                        <div class="flex items-center gap-2">
+                            <a id="m_linkDashboard" href="user-dashboard.html" class="text-sm px-2 py-1 rounded hover:bg-gray-100">Dashboard</a>
+                            <a id="m_linkAdmin" href="admin-dashboard.html" class="text-sm px-2 py-1 rounded hidden">Admin</a>
+                            <button id="m_btnLogout" class="text-sm px-2 py-1 rounded">Cerrar</button>
+                        </div>
+                    </header>
+
+                    <!-- Top Navigation -->
+                    <nav class="bg-white shadow-sm">
+                        <div class="flex justify-between items-center px-6 py-3">
+                            <div class="flex items-center">
+                                <button id="mobileMenuButton" class="md:hidden focus:outline-none mr-4">
+                                    <i data-feather="menu" class="w-6 h-6 text-blue-900"></i>
+                                </button>
+                                <h2 class="text-xl font-semibold text-blue-900">Panel de Monitoreo</h2>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <button class="p-2 rounded-full hover:bg-gray-100 transition">
+                                    <i data-feather="bell" class="w-5 h-5 text-blue-900"></i>
+                                </button>
+                                <div class="relative">
+                                    <button id="userMenuButton" class="flex items-center space-x-2 focus:outline-none">
+                                        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                            <i data-feather="user" class="w-4 h-4 text-blue-900"></i>
+                                        </div>
+                                        <span class="text-blue-900 font-medium hidden md:inline">Usuario</span>
+                                    </button>
+                                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Perfil</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
+                                        <a href="index.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
+                                    </div>
                                 </div>
-                                <span class="text-blue-900 font-medium hidden md:inline">Usuario</span>
-                            </button>
-                            <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Perfil</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Configuración</a>
-                                <a href="index.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Cerrar Sesión</a>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </nav>
+                    </nav>
 
             <!-- Main Content -->
             <main class="p-6">
@@ -281,14 +295,91 @@
 
     <!-- Scripts -->
     <script>
+        const API = 'http://localhost:3000/api';
+        const token = localStorage.getItem('token');
+        if (!token) { alert('No autenticado.'); window.location.href='login.html'; }
+
+        function parseJwt(token) {
+            try {
+                const b = token.split('.')[1];
+                return JSON.parse(decodeURIComponent(atob(b).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join('')));
+            } catch(e){ return {}; }
+        }
+
+        async function api(path, opts = {}) {
+            opts.headers = { ...(opts.headers||{}), 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+            const res = await fetch(API + path, opts);
+            const txt = await res.text();
+            try { return { ok: res.ok, status: res.status, data: JSON.parse(txt) }; } catch(e) { return { ok: res.ok, status: res.status, data: txt }; }
+        }
+
+        let myId, myRole;
+        async function loadProfile() {
+        const payload = parseJwt(token);
+        myId = payload.id;
+        myRole = payload.role;
+
+        if (!myId) { alert('Token inválido'); localStorage.removeItem('token'); window.location.href='login.html'; return; }
+
+        // Show admin links if SUPPORT
+        if (myRole === 'SUPPORT') {
+            // support link should go to admin-dashboard for SUPPORT
+            document.getElementById('supportItem').innerHTML += `
+            <a id="linkSupportAdmin" href="admin-dashboard.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                <i data-feather="help-circle" class="mr-2 w-5 h-5 text-blue-200"></i> Admin de usuarios
+            </a>
+            `;
+            // show admin link in mobile header
+            document.getElementById('m_linkAdmin')?.classList.remove('hidden');
+            // 'Inicio' should always point to user dashboard
+            document.getElementById('linkDashboard').href = 'user-dashboard.html';
+            document.getElementById('m_linkDashboard').href = 'user-dashboard.html';
+        } else {
+            // for normal users show phone + button to open support form
+            document.getElementById('supportItem').innerHTML = `
+            <a id="linkSupportAdmin" href="soporte.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+                <i data-feather="help-circle" class="mr-2 w-5 h-5 text-blue-200"></i> Soporte
+            </a>
+            `;
+            document.getElementById('m_linkAdmin')?.classList.add('hidden');
+            document.getElementById('linkDashboard').href = 'user-dashboard.html';
+            document.getElementById('m_linkDashboard').href = 'user-dashboard.html';
+                        // hook openSupport after DOM updated (if present)
+                        const openSupBtn = document.getElementById('openSupport');
+                        if (openSupBtn) {
+                            openSupBtn.addEventListener('click', () => {
+                                const supSec = document.getElementById('supportSection');
+                                if (supSec) {
+                                    supSec.classList.remove('hidden');
+                                    supSec.scrollIntoView({ behavior: 'smooth' });
+                                }
+                            });
+                        }
+        }
+
+    // load user profile values (only populate if elements exist on this page)
+    const r = await api('/users/' + myId);
+    if (!r.ok) { alert(r.data.message || 'Error cargando perfil'); return; }
+    const u = r.data;
+    const elName = document.getElementById('s_name');
+    const elEmail = document.getElementById('s_email');
+    if (elName) elName.value = u.name;
+    if (elEmail) elEmail.value = u.email;
+        }
+
+
         // Initialize AOS animations
         AOS.init({
             duration: 800,
             once: true
         });
 
-        // Initialize feather icons
-        feather.replace();
+        // populate sidebar according to role and then render feather icons
+        loadProfile().then(() => {
+            feather.replace();
+        });
 
         // Mobile menu toggle
         document.getElementById('mobileMenuButton').addEventListener('click', function() {
@@ -317,6 +408,14 @@
                 document.getElementById('userMenu').classList.add('hidden');
             }
         });
+
+        // Logout handler (shared)
+        function logoutAll() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+        document.getElementById('btnLogout')?.addEventListener('click', logoutAll);
+        document.getElementById('m_btnLogout')?.addEventListener('click', logoutAll);
 
         // Generate random data for charts (in a real app, this would come from an API)
         function generateRandomData(hours, min, max) {

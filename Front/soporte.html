@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Soporte - SolarEnergy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex">
+  <div class="flex h-screen w-full">
+    <!-- Sidebar (same structure as settings) -->
+    <div class="sidebar bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 md:translate-x-0 transition duration-200 ease-in-out z-50">
+      <div class="flex items-center space-x-2 px-4">
+        <i data-feather="sun" class="text-yellow-500 w-8 h-8"></i>
+        <span class="text-xl font-bold">SolarEnergy</span>
+      </div>
+      <nav>
+        <div class="px-4 py-3 text-blue-200 text-sm font-medium">MENÚ PRINCIPAL</div>
+        <a id="linkDashboard" href="user-dashboard.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="home" class="mr-2 w-5 h-5"></i> Inicio
+        </a>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="activity" class="mr-2 w-5 h-5"></i> Monitoreo
+        </a>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="bar-chart-2" class="mr-2 w-5 h-5"></i> Estadísticas
+        </a>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="credit-card" class="mr-2 w-5 h-5"></i> Pagos
+        </a>
+
+        <div id="supportItem" class="px-2 mt-2"></div>
+
+        <a href="settings.html" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center mt-4">
+          <i data-feather="settings" class="mr-2 w-5 h-5"></i> Configuración
+        </a>
+
+        <div class="px-4 py-3 text-blue-200 text-sm font-medium mt-8">TU SISTEMA</div>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="battery" class="mr-2 w-5 h-5"></i> Baterías
+        </a>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="calendar" class="mr-2 w-5 h-5"></i> Mantenimiento
+        </a>
+        <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+          <i data-feather="file-text" class="mr-2 w-5 h-5"></i> Documentos
+        </a>
+      </nav>
+
+      <div class="px-4 mt-10">
+        <button id="btnLogout" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded transition">
+          <i data-feather="log-out" class="inline w-4 h-4 mr-2"></i> Cerrar sesión
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <main class="flex-1 p-6 md:ml-64 w-full">
+      <div class="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Soporte</h2>
+        <div id="supportInfo" class="mb-4">
+          <p class="text-sm">Si eres usuario, completa el formulario para solicitar soporte. Si eres del equipo de soporte, serás redirigido al panel de administración.</p>
+        </div>
+
+        <div id="supportSection">
+          <form id="supportForm" class="grid gap-3">
+            <input id="sup_subject" class="p-2 border rounded" placeholder="Asunto" required />
+            <textarea id="sup_message" class="p-2 border rounded" placeholder="Describe tu problema" rows="6" required></textarea>
+            <div class="flex gap-2">
+              <button type="submit" class="px-4 py-2 bg-blue-700 text-white rounded">Enviar</button>
+              <button type="button" id="sup_cancel" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
+            </div>
+          </form>
+          <div id="supportResult" class="mt-3 text-sm"></div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<script src="https://unpkg.com/feather-icons"></script>
+<script>
+// populate supportItem according to role then render feather icons
+initSupportPage().then(() => {
+  feather.replace();
+});
+
+const API = 'http://localhost:3000/api';
+const token = localStorage.getItem('token');
+if (!token) { alert('No autenticado.'); window.location.href='login.html'; }
+
+function parseJwt(token) {
+  try {
+    const b = token.split('.')[1];
+    return JSON.parse(decodeURIComponent(atob(b).split('').map(function(c) { return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2); }).join('')));
+  } catch(e){ return {}; }
+}
+
+async function api(path, opts = {}) {
+  opts.headers = { ...(opts.headers||{}), 'Content-Type': 'application/json', Authorization: 'Bearer ' + token };
+  const res = await fetch(API + path, opts);
+  const txt = await res.text();
+  try { return { ok: res.ok, status: res.status, data: JSON.parse(txt) }; } catch(e) { return { ok: res.ok, status: res.status, data: txt }; }
+}
+
+async function initSupportPage() {
+  const payload = parseJwt(token);
+  const myId = payload.id;
+  const myRole = payload.role;
+  if (!myId) { localStorage.removeItem('token'); window.location.href='login.html'; return; }
+
+  if (myRole === 'SUPPORT') {
+    // redirect support users to admin panel
+    window.location.href = 'admin-dashboard.html';
+    return;
+  }
+
+  // show support link info for normal users
+  document.getElementById('supportItem').innerHTML = `\
+    <div class="px-4 py-2 text-blue-200">\
+      <div class="text-xs">SOPORTE</div>\
+      <div class="mt-1 text-sm">Tel: <span class="font-medium">+57 300 000 0000</span></div>\
+    </div>`;
+
+}
+
+// support form submission (frontend fallback)
+document.getElementById('supportForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const subj = document.getElementById('sup_subject').value.trim();
+  const msg = document.getElementById('sup_message').value.trim();
+  if (!subj || !msg) { document.getElementById('supportResult').textContent = 'Completa asunto y mensaje.'; return; }
+
+  try {
+    const res = await fetch(API + '/support', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ subject: subj, message: msg })
+    });
+    if (res.ok) {
+      document.getElementById('supportResult').textContent = 'Solicitud enviada. Nuestro equipo de soporte se pondrá en contacto.';
+      document.getElementById('supportForm').reset();
+    } else {
+      document.getElementById('supportResult').textContent = 'Solicitud registrada localmente (backend no implementado).';
+      document.getElementById('supportForm').reset();
+    }
+  } catch (err) {
+    document.getElementById('supportResult').textContent = 'No se pudo enviar la solicitud (sin conexión con backend).';
+  }
+});
+
+document.getElementById('sup_cancel').addEventListener('click', () => { window.location.href = 'user-dashboard.html'; });
+
+document.getElementById('btnLogout').addEventListener('click', () => { localStorage.removeItem('token'); window.location.href='login.html'; });
+
+// initSupportPage already called above and feather icons replaced there
+</script>
+</body>
+</html>

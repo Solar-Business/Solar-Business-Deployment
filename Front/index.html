@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -333,6 +334,9 @@
             </div>
         </div>
     </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 
     <!-- Scripts -->
     <script>
@@ -345,6 +349,82 @@
         // Initialize feather icons
         feather.replace();
 
+        // Variables globales para almacenar los datos del formulario
+        let calculatorData = {};
+
+        // Generar PDF desde backend
+        document.getElementById('saveReport').addEventListener('click', async function () {
+            try {
+                // Mostrar loading
+                const button = this;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i data-feather="loader" class="mr-2 w-4 h-4 animate-spin"></i> Generando...';
+                button.disabled = true;
+
+                // Obtener datos desde el DOM y desde las variables globales
+                const reportData = {
+                    consumption: calculatorData.consumption || 0,
+                    bill: calculatorData.bill || 0,
+                    roofType: calculatorData.roofType || 'inclinado',
+                    orientation: calculatorData.orientation || 'sur',
+                    requiredKW: document.getElementById('requiredKW').textContent,
+                    panelCount: document.getElementById('panelCount').textContent,
+                    requiredArea: document.getElementById('requiredArea').textContent,
+                    estimatedCost: document.getElementById('estimatedCost').textContent,
+                    monthlySavings: document.getElementById('monthlySavings').textContent,
+                    annualSavings: document.getElementById('annualSavings').textContent,
+                    roiYears: document.getElementById('roiYears').textContent
+                };
+
+                // Validar datos
+                if (!reportData.requiredKW || !reportData.panelCount) {
+                    alert('Por favor calcula primero tu sistema solar antes de generar el reporte.');
+                    return;
+                }
+
+                // Enviar al backend
+                const response = await fetch('http://localhost:3000/api/reports/generate-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reportData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en el servidor: ' + response.status);
+                }
+
+                // Obtener el PDF como blob
+                const blob = await response.blob();
+
+                // Crear enlace de descarga
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `Reporte_SolarEnergy_${new Date().toISOString().slice(0,10)}.pdf`;
+                
+                document.body.appendChild(a);
+                a.click();
+                
+                // Limpiar
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                alert('¡Reporte PDF generado exitosamente!');
+
+            } catch (error) {
+                console.error('Error al generar el reporte:', error);
+                alert('Error al generar el reporte: ' + error.message + '\nAsegúrate de que el servidor esté ejecutándose.');
+            } finally {
+                // Restaurar botón
+                button.innerHTML = originalText;
+                button.disabled = false;
+                feather.replace();
+            }
+        });
+
         // Solar Calculator Logic
         document.getElementById('solarCalculatorForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -354,6 +434,9 @@
             const bill = parseFloat(document.getElementById('bill').value);
             const roofType = document.getElementById('roofType').value;
             const orientation = document.getElementById('orientation').value;
+            
+            // Guardar datos para el reporte PDF
+            calculatorData = { consumption, bill, roofType, orientation };
             
             // Solar panel specifications (can be changed)
             const panelWattage = 350; // Watts per panel
@@ -443,9 +526,29 @@
             });
         }
 
-        // Save report button
-        document.getElementById('saveReport').addEventListener('click', function() {
-            alert('Reporte guardado (simulación). En una implementación real, esto generaría un PDF.');
+        // Send email on form submission
+        document.querySelector('#contact form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            if (!name || !email || !message) {
+                alert('Por favor completa todos los campos obligatorios.');
+                return;
+            }
+
+            try {
+                // Simulate email sending (replace with actual API call)
+                alert(`Mensaje enviado exitosamente:\n\nNombre: ${name}\nCorreo: ${email}\nTeléfono: ${phone}\nMensaje: ${message}`);
+
+                // Clear the form
+                document.querySelector('#contact form').reset();
+            } catch (error) {
+                alert('Hubo un error al enviar el mensaje. Por favor, inténtalo de nuevo más tarde.');
+            }
         });
 
         // Contact us button
@@ -453,5 +556,40 @@
             document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
         });
     </script>
+    <!-- Librerías necesarias -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Contenedor invisible del reporte -->
+<div id="reportContent" style="width: 800px; background: #fff; color: #000; padding: 30px; font-family: Arial; display:none;">
+    <h2 style="color:#1E3A8A; text-align:center;">Reporte Personalizado - SolarEnergy</h2>
+    <h4 style="text-align:center; color:#444;">Análisis del Sistema Solar Propuesto</h4>
+
+    <table style="width:100%; border-collapse: collapse; margin-top:20px;">
+        <tr style="background:#f4f4f4;"><th style="text-align:left;padding:8px;">Variable</th><th style="text-align:left;padding:8px;">Valor</th></tr>
+        <tr><td style="padding:8px;">Potencia Requerida</td><td style="padding:8px;" id="pdfKW"></td></tr>
+        <tr><td style="padding:8px;">Número de Paneles</td><td style="padding:8px;" id="pdfPanels"></td></tr>
+        <tr><td style="padding:8px;">Área Necesaria</td><td style="padding:8px;" id="pdfArea"></td></tr>
+        <tr><td style="padding:8px;">Inversión Estimada</td><td style="padding:8px;" id="pdfCost"></td></tr>
+        <tr><td style="padding:8px;">Ahorro Mensual Estimado</td><td style="padding:8px;" id="pdfMonthly"></td></tr>
+        <tr><td style="padding:8px;">Ahorro Anual Estimado</td><td style="padding:8px;" id="pdfAnnual"></td></tr>
+        <tr><td style="padding:8px;">Retorno de Inversión</td><td style="padding:8px;" id="pdfROI"></td></tr>
+    </table>
+
+    <h3 style="margin-top:30px; color:#1E3A8A;">Comparativa de Costos</h3>
+    <div id="chartBars" style="width:100%; margin-top:10px;"></div>
+
+    <h3 style="margin-top:30px; color:#1E3A8A;">Proyección de Ahorros a 10 Años</h3>
+    <table id="projectionTable" style="width:100%; border-collapse: collapse; margin-top:10px;">
+        <tr style="background:#f4f4f4;"><th style="text-align:left;padding:8px;">Año</th><th style="text-align:left;padding:8px;">Ahorro Acumulado (COP)</th></tr>
+    </table>
+
+    <p style="margin-top:30px; text-align:justify;">
+        <strong>Conclusión:</strong> La simulación demuestra que el sistema solar propuesto garantiza un ahorro progresivo a largo plazo, 
+        con una reducción significativa del consumo tradicional y un impacto ambiental positivo. 
+        SolarEnergy ofrece una solución escalable y sostenible adaptada a las necesidades del cliente.
+    </p>
+</div>
+
 </body>
 </html>

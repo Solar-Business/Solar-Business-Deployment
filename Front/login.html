@@ -84,6 +84,13 @@
         </div>
     </section>
 
+    <!-- Logout Button -->
+    <div class="px-4 mt-10">
+      <button id="btnLogout" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded transition">
+        <i data-feather="log-out" class="inline w-4 h-4 mr-2"></i> Cerrar sesión
+      </button>
+    </div>
+
     <!-- Scripts -->
     <script>
         AOS.init({ duration: 800, once: true });
@@ -118,6 +125,14 @@
                 alert('No se pudo conectar con el servidor en http://localhost:3000');
             }
         });
+
+        // Update supportItem logo
+        if (myRole === 'SUPPORT') {
+          document.getElementById('supportItem').innerHTML = `\
+            <a id="linkSupportAdmin" href="admin-dashboard.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">\
+              <i data-feather="help-circle" class="mr-2 w-5 h-5 text-blue-200"></i> Admin de usuarios\
+            </a>`;
+        }
     </script>
 </body>
 </html>
