@@ -238,7 +238,7 @@ const getReportTemplate = (data) => `
             <thead>
                 <tr>
                     <th>Período</th>
-                    <th>Ahorro Acumulado</th>
+                    <th>Ahorro Acumulado (milllones)</th>
                 </tr>
             </thead>
             <tbody>

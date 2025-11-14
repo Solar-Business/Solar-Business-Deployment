@@ -35,7 +35,7 @@
       <!-- Support item - populated by JS -->
       <div id="supportItem" class="px-2 mt-2"></div>
 
-      <a href="settings.html" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center mt-4">
+      <a href="settings.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
         <i data-feather="settings" class="mr-2 w-5 h-5"></i> Configuración
       </a>
 
@@ -43,7 +43,7 @@
       <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
         <i data-feather="battery" class="mr-2 w-5 h-5"></i> Baterías
       </a>
-      <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
+      <a href="maintenance.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
         <i data-feather="calendar" class="mr-2 w-5 h-5"></i> Mantenimiento
       </a>
       <a href="#" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">
@@ -155,7 +155,7 @@
 
       if (myRole === 'SUPPORT') {
         document.getElementById('supportItem').innerHTML = `\
-          <a id="linkSupportAdmin" href="admin-dashboard.html" class="block py-2.5 px-4 rounded hover:bg-blue-800 text-blue-200 hover:text-white transition flex items-center mt-1">\
+          <a id="linkSupportAdmin" href="admin-dashboard.html" class="block py-2.5 px-4 rounded bg-blue-800 text-white flex items-center mt-4">\
             <i data-feather="help-circle" class="mr-2 w-5 h-5 text-blue-200"></i> Admin de usuarios\
           </a>`;
         // linkDashboard should always go to user dashboard per requirement
