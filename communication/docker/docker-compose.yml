@@ -1,0 +1,50 @@
+services:
+  mqtt-broker:
+    build: .
+    container_name: solar-mqtt-broker
+    restart: unless-stopped
+    network_mode: "host"    # Usar host network directamente
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - mqtt_logs:/mosquitto/log
+    environment:
+      - MQTT_USER=solar_user
+      - MQTT_PASSWORD=testing_password_123
+      - MQTT_PORT=1883
+      - MQTT_WS_PORT=9001
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-h", "localhost", "-p", "1883", "-t", "health/check", "-m", "ok"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Opcional: Cliente de prueba
+  mqtt-test:
+    image: eclipse-mosquitto:2.0.18
+    depends_on:
+      - mqtt-broker
+    networks:
+      - mqtt-network
+    profiles:
+      - testing
+    command: >
+      sh -c "
+        echo 'Esperando MQTT broker...' &&
+        sleep 5 &&
+        echo '🧪 Testing MQTT connection...' &&
+        mosquitto_pub -h mqtt-broker -p 1883 -u solar_user -P testing_password_123 -t 'test/docker' -m 'Hello from Docker!' &&
+        echo '✅ MQTT test successful!' &&
+        echo '📡 Subscribing to test topics...' &&
+        mosquitto_sub -h mqtt-broker -p 1883 -u solar_user -P testing_password_123 -t 'test/+' -C 5
+      "
+
+volumes:
+  mqtt_data:
+    driver: local
+  mqtt_logs:
+    driver: local
+
+networks:
+  mqtt-network:
+    driver: bridge
